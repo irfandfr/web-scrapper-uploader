@@ -3,8 +3,8 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 
 // the urls you want to get scrapped information from 
-const url="https://pokemondb.net/pokedex/game/scarlet-violet"
-const urlBase="https://pokemondb.net"
+const url="https://yourchosenweb.com/some-links"
+const urlBase="https://yourchosenweb.net"
 
 
 /**
@@ -20,29 +20,28 @@ async function getHtml(){
       //get the list of scraped objects
       const list = $(".ent-name")
       //store scraped objects data
-      let pkmnData = {}
+      let data = {}
       
       //access the scrapeds objects individual web pages from the list earlier 
-      const pkmnPromise = list.map( async i =>{
+      const dataPromises = list.map( async i =>{
         //returns a collection of promise objects
         return axios.get(`${urlBase}${list[i].attribs.href}`)
       })
 
       //catch all the promise objects earlier
-      Promise.all(pkmnPromise).then(page => {
+      Promise.all(dataPromises).then(page => {
         //resulting response is an array of the lists HTML page
-        page.forEach((pkmn, i ) => {
-          let $ = cheerio.load(pkmn.data)
-          //insert scrapping logic here
+        page.forEach((res, i ) => {
+          let $ = cheerio.load(res.data)
+          //insert scrapping logic here, below is just an example
           let name = $('h1').contents().first().text()
-          let baseSpeed = $('.vitals-table .cell-num')[15].childNodes[0].nodeValue
-          let str = `[alt="${name} sprite from Scarlet & Violet"]`
+          let str = `[alt="some attribute string"]`
           let imgLink = $(str)[0].attribs.src
-          //add the new scraped info into the variable
-          pkmnData[i+1] = {name: name, baseSpeed:baseSpeed, image:imgLink}
+          //add the new scraped info into the variable, preferably have an image attribute
+          data[i+1] = {name : name,image:imgLink}
         })
         //returns the scraped data, when successful
-        resolve(pkmnData)
+        resolve(data)
       }).catch(err => reject(err))
     }).catch((error) => reject(error))
   })
